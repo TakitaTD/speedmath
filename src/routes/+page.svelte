@@ -2,6 +2,9 @@
 	import mexp from 'math-expression-evaluator';
 	export let question = 'LOADING...';
 	export let user_input = '';
+	export let user_locale: string;
+	export let skipped: number = 1337;
+	let solved: number = 1337;
 	function getDiff() {
 		if (typeof window === 'undefined') {
 			return;
@@ -19,67 +22,91 @@
 	let maxnum: number;
 
 	if (typeof window !== 'undefined') {
+		user_locale =
+			navigator.languages && navigator.languages.length
+				? navigator.languages[0]
+				: navigator.language;
 		useDiff(getDiff() || 0);
+		let solvedLocal = localStorage.getItem('solved');
+		if (solvedLocal) {
+			if (isNaN(parseInt(solvedLocal))) {
+				solved = 0;
+			} else {
+				solved = parseInt(solvedLocal);
+			}
+		} else {
+			solved = 0;
+		}
+		let skippedLocal = localStorage.getItem('skipped');
+		if (skippedLocal) {
+			if (isNaN(parseInt(skippedLocal))) {
+				skipped = 0;
+			} else {
+				skipped = parseInt(skippedLocal);
+			}
+		} else {
+			skipped = 0;
+		}
 	}
 	let answer = 0;
 	function generateQuestion() {
-		let num1: number = 0;
-		let num2: number = 0;
-		function randomNum() {
-			num1 = Math.floor(Math.random() * maxnum);
-			num2 = Math.floor(Math.random() * maxnum);
-			if (num1 === 0 || num1 === 1) {
-				randomNum();
-			}
-			if (num2 === 0 || num2 === 1) {
-				randomNum();
-			}
-		}
-		randomNum();
 		let op = Math.floor(Math.random() * 4);
 		let operation = '';
-
-		if (num1 === 0) {
-			num1;
-		}
-		if (num2 === 0) {
-			num2++;
-		}
+		let num1: number = 0;
+		let num2: number = 0;
 		switch (op) {
 			case 0: {
-				operation = '+';
-				answer = num1 + num2;
-				break;
-			}
-			case 1: {
-				operation = '-';
-				if (num2 > num1) {
-					let buf = num2;
-					num2 = num1;
-					num1 = buf;
-				}
-				answer = num1 - num2;
-				break;
-			}
-			case 2: {
 				operation = '*';
+				let fivenum = Math.floor(Math.random() * 2);
+				if (fivenum === 1) {
+					num2 = parseInt(`${Math.floor(Math.random() * (maxnum / 10)) + 1}5`);
+				} else {
+					num2 = parseInt(`${Math.floor(Math.random() * (maxnum / 10)) + 1}0`);
+				}
+				num1 = Math.floor(Math.random() * 9) + 1;
 				answer = num1 * num2;
 				break;
 			}
-			case 3: {
+			case 1: {
 				operation = '/';
+				let fivenum = Math.floor(Math.random() * 2);
+				if (fivenum === 1) {
+					num2 = parseInt(`${Math.floor(Math.random() * 2) + 1}5`);
+				} else {
+					num2 = parseInt(`${Math.floor(Math.random() * 2) + 1}0`);
+				}
+				num1 = Math.floor(Math.random() * 9) + 1;
+
+				if (num1 > num2) {
+					const buf = num2;
+					num2 = num1;
+					num1 = buf;
+				}
 				answer = num1 / num2;
+
 				break;
 			}
-			default: {
-				// answer = "ERROR";
-				answer = -1;
-				operation = 'ERROR';
+			case 2: {
+				operation = '+';
+				num1 = Math.floor(Math.random() * maxnum) + 1;
+				num2 = Math.floor(Math.random() * maxnum) + 1;
+				answer = num1 + num2;
+				break;
+			}
+			case 3: {
+				operation = '-';
+				num1 = Math.floor(Math.random() * maxnum) + 1;
+				num2 = Math.floor(Math.random() * maxnum) + 1;
+				if (num1 < num2) {
+					const buf = num1;
+					num1 = num2;
+					num2 = buf;
+				}
+				answer = num1 - num2;
 			}
 		}
 		question = `${num1} ${operation} ${num2}`;
 		answer = parseFloat(answer.toFixed(2));
-		console.log(answer);
 	}
 	if (typeof window !== 'undefined') {
 		generateQuestion();
@@ -114,6 +141,8 @@
 	async function checkAnswer(e: any) {
 		if (typeof window !== 'undefined') {
 			if (parseFloat(e.target.value) === answer) {
+				solved++;
+				localStorage.setItem('solved', solved.toString());
 				setTimeout(() => {
 					e.target.value = '';
 				}, 0);
@@ -125,10 +154,11 @@
 </script>
 
 <div class="options">
-	<span>Addition<input type="checkbox" /></span>
+	<span>Solved: {solved.toLocaleString(user_locale)}</span>
+	<span>Skipped: {skipped.toLocaleString(user_locale)}</span>
 </div>
 <div class="diff">
-	<label for="difficulty">Difficulty</label>
+	<label for="difficulty">Difficulty: {maxnum}</label>
 	<select name="difficulty" id="difficulty" on:input={selectDiff}>
 		<option value="0"> Lenient </option>
 		<option value="1"> Easy </option>
@@ -144,7 +174,11 @@
 		bind:value={user_input}
 		on:input={checkAnswer}
 		on:keypress={(e) => {
-			e.key === 'Enter' && generateQuestion();
+			if (e.key === 'Enter') {
+				skipped++;
+				localStorage.setItem('skipped', skipped.toString());
+				generateQuestion();
+			}
 		}}
 	/>
 </main>
@@ -208,14 +242,15 @@
 			width: 50%;
 			height: 10%;
 			font-size: 0.8rem;
-			background-color: rgba(0, 0, 0, 0);
+			// background-color: rgba(0, 0, 0, 0.25);
+			background-color: rgba(255, 255, 255, 0.05);
 			color: inherit;
 			border: none;
 			outline: none;
 			border: solid #fff 2px;
 			border-radius: 4px;
 			text-align: center;
-			padding: 0.2rem;
+			padding: 0.3rem;
 		}
 	}
 </style>
