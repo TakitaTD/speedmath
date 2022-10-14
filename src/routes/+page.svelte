@@ -6,9 +6,6 @@
 	export let skipped: number = 1337;
 	let solved: number = 1337;
 	function getDiff() {
-		if (typeof window === 'undefined') {
-			return;
-		}
 		let diffLocal = localStorage.getItem('diff');
 		if (!diffLocal) {
 			localStorage.setItem('diff', '0');
@@ -18,10 +15,11 @@
 			return parseInt(diffLocal);
 		}
 	}
-	export let diff = getDiff();
+	export let diff = 1337;
 	let maxnum: number;
 
 	if (typeof window !== 'undefined') {
+		diff = getDiff() || 1337;
 		user_locale =
 			navigator.languages && navigator.languages.length
 				? navigator.languages[0]
