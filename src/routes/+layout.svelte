@@ -24,7 +24,7 @@
 		left: 0;
 		height: 100%;
 		width: 100%;
-		background-image: url('/284791-1763830463.jpg');
+		background-image: url('../assets/284791-1763830463.jpg');
 		background-size: cover;
 		z-index: -1;
 	}

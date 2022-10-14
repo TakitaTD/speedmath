@@ -1,5 +1,4 @@
 <script lang="ts">
-	import mexp from 'math-expression-evaluator';
 	export let question = 'LOADING...';
 	export let user_input = '';
 	export let user_locale: string;
@@ -75,7 +74,7 @@
 				}
 				num1 = Math.floor(Math.random() * 9) + 1;
 
-				if (num1 > num2) {
+				if (num1 < num2) {
 					const buf = num2;
 					num2 = num1;
 					num1 = buf;
@@ -127,6 +126,9 @@
 				maxnum = 50;
 				break;
 			}
+			case 4: {
+				maxnum = 150;
+			}
 		}
 	}
 	async function selectDiff(e: any) {
@@ -156,12 +158,13 @@
 	<span>Skipped: {skipped.toLocaleString(user_locale)}</span>
 </div>
 <div class="diff">
-	<label for="difficulty">Difficulty: {maxnum}</label>
+	<label for="difficulty">Difficulty</label>
 	<select name="difficulty" id="difficulty" on:input={selectDiff}>
 		<option value="0"> Lenient </option>
 		<option value="1"> Easy </option>
 		<option value="2"> Medium </option>
 		<option value="3"> Hard </option>
+		<option value="4"> Nightmare </option>
 	</select>
 </div>
 <main>
@@ -245,8 +248,9 @@
 			color: inherit;
 			border: none;
 			outline: none;
-			border: solid #fff 2px;
-			border-radius: 4px;
+			border: solid #d8dee9 3px;
+			border-radius: 999px;
+			border-inline: solid #88c0d0 3px;
 			text-align: center;
 			padding: 0.3rem;
 		}
